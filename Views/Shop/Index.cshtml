@@ -1,0 +1,44 @@
+﻿@using WebApplication1.Models
+
+@model IList<Shop> 
+
+@{
+    Layout = "~/Views/Shared/Layout.cshtml";
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('select').on('change', function () {
+            window.location.href = `https://localhost:44387/product/index/${this.value}`;
+        });
+    });
+
+</script>
+
+<div class="main_container">
+    <h2>Список магазинов</h2>
+
+    <table>
+        <tr>
+            <th>Магазин</th>
+            <th>Товары</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Name
+                    <br>
+                    @item.WorkTime
+                </td>
+                <td>
+                    @Html.DropDownList("Name", selectList: new SelectList(
+                   item.ShopProducts.Select(x => x.Product).Select(x => new { item.Id, x.Name }), "Id", "Name"),
+                        "Выберите товар", new { @id = $"shop_{@item.Name}" })
+                </td>
+            </tr>
+        }
+    </table>
+
+</div>

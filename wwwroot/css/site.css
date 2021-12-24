@@ -1,0 +1,39 @@
+﻿body {
+    background-image: url('../img/hleb.jpg');
+}
+
+table, th, td {
+    border: 1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h2 {
+    text-align: center;
+}
+
+.form-container {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.editable {
+    position: relative;
+    padding: 10px;
+    border: 1px solid black;
+}
+
+#fn {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.editProduct_container {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.main_container {
+    background-color: white;
+    padding-bottom: 50px;
+}

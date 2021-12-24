@@ -1,0 +1,198 @@
+﻿@using WebApplication1.Models
+
+@model IList<Product>
+
+@{
+    Layout = "~/Views/Shared/Layout.cshtml";
+}
+
+<script type="text/javascript">
+
+    async function SendReq(url, body) {
+        return await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: body
+        });
+    }
+
+    function GetDataForm(DomItem) {
+        let formData = new FormData(document.getElementById(DomItem));
+        let object = {};
+        formData.forEach(function (value, key) {
+            object[key] = value;
+        });
+
+        return object;
+    }
+
+    $(document).ready(function () {
+
+        $("input[type='button']").each(function () {
+            $(this).click(function () {
+                (async () => {
+                    const rawResponse = await SendReq('https://localhost:44387/product/drop',
+                        JSON.stringify({ id: this.id, page: window.location.href.split('/').pop() }))
+                    const redirectUrl = await rawResponse.json();
+                    window.location.replace(redirectUrl);
+                })();
+            });
+        });
+
+        $(function () {
+            var submitButton = $("#productForm button[type='submit']").attr("disabled", true);
+            $("#productForm input.required").change(function () {
+                var valid = true;
+                $.each($("#productForm input.required"), function (index, value) {
+
+                    if (!$(value).val()) {
+                        valid = false;
+                    }
+                });
+                if (valid) {
+                    $(submitButton).attr("disabled", false);
+                    console.log("valid");
+                }
+                else {
+                    $(submitButton).attr("disabled", true);
+                }
+            });
+        });
+
+
+        $("#productForm").submit(function (e) {
+            e.preventDefault();
+
+            let object = GetDataForm("productForm");
+            object.page = window.location.href.split('/').pop();
+            var json = JSON.stringify(object);
+
+            (async () => {
+                const rawResponse = await SendReq('https://localhost:44387/product/add', json);
+                const redirectUrl = await rawResponse.json();
+                window.location.replace(redirectUrl);
+            })();
+
+        });
+
+        $('#editProduct').on('change', function () {
+            $("#fn").show();
+
+            var id = this.value;
+
+            (async () => {
+                const rawResponse = await SendReq('https://localhost:44387/product/geteditproduct', JSON.stringify({ id: id }));
+                const editProduct = await rawResponse.json();
+
+                $("#edprodName").val(editProduct.result.name);
+                $("#edprodDescription").val(editProduct.result.description);
+
+
+                $("#productEditForm").submit(function (e) {
+                    e.preventDefault();
+
+                    if ($("#edprodName").val().length === 0 &&
+                        $("#edprodDescription").val().length === 0) {
+                        alert("Упс, поля пустые");
+                        return;
+                    }
+
+                    let object = GetDataForm("productEditForm");
+                    object.id = id;
+                    object.page = window.location.href.split('/').pop();
+                    var json = JSON.stringify(object);
+
+                    (async () => {
+                        const rawResponse = await SendReq('https://localhost:44387/product/update', json);
+                        const redirectUrl = await rawResponse.json();
+                        window.location.replace(redirectUrl);
+                    })();
+
+                });
+
+            })();
+
+        });
+
+        $('#cancel').on('click', function () {
+            window.location.href = `https://localhost:44387/product/index/${window.location.href.split('/').pop()}`;
+        });
+
+    });
+
+</script>
+
+<div class="main_container">
+
+
+    <h2>Полный список товаров</h2>
+
+    <table>
+        <tr>
+            <th>Наименование товара</th>
+            <th>Описание</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Name
+                </td>
+                <td>
+                    @item.Description
+                </td>
+                <td>
+                    <input type="button" id="@item.Id" value="Удалить" />
+                </td>
+            </tr>
+
+        }
+    </table>
+
+
+    <h2>Добавить товар</h2>
+
+    <div class="form-container">
+        <form id="productForm">
+            <label for="fname">Наименнования товара</label>
+            <input type="text" id="name" name="ProductName" placeholder="Введите Наименнования.." class="required">
+            <br>
+            <br>
+            <label for="lname">Описание</label>
+            <input type="text" id="description" name="ProductDescription" placeholder="Введите описание.." class="required">
+            <br>
+            <br>
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="editProduct_container">
+        <h2>Изменить товар</h2>
+        <br>
+        @Html.DropDownList("editProduct", selectList: new SelectList(
+                       Model, "Id", "Name"),
+                            "Выберите товар")
+    </div>
+
+    <div id="fn" hidden>
+        <form id="productEditForm">
+            <br>
+            <br>
+            Наименование : <input id="edprodName" name="editProdName" type="text" />
+            <br>
+            <br>
+            Описание: <input id="edprodDescription" name="editProdDescription" type="text" />
+            <br>
+            <br>
+            <input type="submit" value="Изменить" />
+            <input id="cancel" type="button" value="Отмена" />
+        </form>
+    </div>
+
+</div>
